@@ -5,8 +5,10 @@
 
 import streamlit as st
 import yfinance as yf
+import pandas as pd  # ✅ <-- Add this
 import ta
 import plotly.graph_objects as go
+
 
 # === PAGE CONFIG ===
 st.set_page_config(page_title="Jared • AI Stock Scout", layout="wide")
