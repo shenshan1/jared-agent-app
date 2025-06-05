@@ -1,5 +1,0 @@
-
-streamlit
-yfinance
-ta
-plotly
