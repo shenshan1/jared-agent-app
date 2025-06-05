@@ -39,14 +39,36 @@ timeframes = {
 
 # === FUNCTIONS ===
 def fetch_data(ticker, interval, period):
-    df = yf.download(ticker, interval=interval, period=period)
-    df.dropna(inplace=True)
-    return df
+    try:
+        df = yf.download(ticker, interval=interval, period=period, progress=False)
+        df.dropna(subset=['Close'], inplace=True)
+        return df
+    except Exception as e:
+        st.error(f"❌ Error fetching data for {ticker}: {str(e)}")
+        return pd.DataFrame()
+
 
 def analyze(df):
-    df['EMA20'] = ta.trend.ema_indicator(df['Close'], window=20).ema_indicator()
-    df['EMA50'] = ta.trend.ema_indicator(df['Close'], window=50).ema_indicator()
-    df['RSI'] = ta.momentum.rsi(df['Close'], window=14)
+    # Make sure the dataframe is not empty and has enough rows
+    if df.empty or df.shape[0] < 50 or 'Close' not in df.columns:
+        return ["⚠️ Not enough data to analyze."]
+
+    df = df.copy()
+    df.dropna(subset=['Close'], inplace=True)
+
+    # Compute indicators
+    ema20 = ta.trend.ema_indicator(close=df['Close'], window=20).ema_indicator()
+    ema50 = ta.trend.ema_indicator(close=df['Close'], window=50).ema_indicator()
+    rsi = ta.momentum.rsi(df['Close'], window=14)
+
+    df['EMA20'] = ema20
+    df['EMA50'] = ema50
+    df['RSI'] = rsi
+
+    df.dropna(inplace=True)
+
+    if df.shape[0] < 2:
+        return ["⚠️ Not enough data after calculating indicators."]
 
     latest = df.iloc[-1]
     previous = df.iloc[-2]
@@ -70,6 +92,9 @@ def analyze(df):
         alerts.append("✅ Potential BUY: RSI pullback in an uptrend")
 
     return alerts
+
+   
+    
 
 def plot_chart(df, tf_label, ticker):
     fig = go.Figure()
