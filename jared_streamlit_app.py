@@ -1,6 +1,11 @@
+
+
+
+  
+
 import streamlit as st
 import yfinance as yf
-import pandas_ta as ta
+import ta
 import plotly.graph_objects as go
 
 # === PAGE CONFIG ===
@@ -39,9 +44,9 @@ def fetch_data(ticker, interval, period):
     return df
 
 def analyze(df):
-    df['EMA20'] = ta.ema(df['Close'], length=20)
-    df['EMA50'] = ta.ema(df['Close'], length=50)
-    df['RSI'] = ta.rsi(df['Close'], length=14)
+    df['EMA20'] = ta.trend.ema_indicator(df['Close'], window=20).ema_indicator()
+    df['EMA50'] = ta.trend.ema_indicator(df['Close'], window=50).ema_indicator()
+    df['RSI'] = ta.momentum.rsi(df['Close'], window=14)
 
     latest = df.iloc[-1]
     previous = df.iloc[-2]
@@ -106,4 +111,3 @@ if ticker_input:
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #888;'>Jared is not financial advice. Do your own research. 🚀</p>", unsafe_allow_html=True)
-
